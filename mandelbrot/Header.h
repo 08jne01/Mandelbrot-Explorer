@@ -92,7 +92,6 @@ double inMandel(complex c)
 
 		}
 
-
 	}
 
 	return 1.0;
