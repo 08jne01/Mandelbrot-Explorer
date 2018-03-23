@@ -1,7 +1,7 @@
 #include "Header.h"
 
 static void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-static void key_CallBack(GLFWwindow *window, int button, int scancode, int action, int mods);
+static void keyCallback(GLFWwindow *window, int button, int scancode, int action, int mods);
 
 class program
 
@@ -11,27 +11,28 @@ private:
 	double step;
 	double ratio;
 	double phase;
+	double xRatio;
+	double yRatio;
 	double x;
 	double y;
 	double scale;
-	int greyscale;
+	int greyScale;
 	int res;
 
 
 
 public:
 
-	mandel_class mandel;
+	mandelClass mandel;
 
-	double cursx;
-	double cursy;
-	double pointsize;
-	int supersample;
+	double xCurs;
+	double yCurs;
+	double pointSize;
 	int width;
 	int height;
-	int fullscreen;
+	int fullScreen;
 
-	void init(int width_, int height_, double step_, double x_, double y_, double scale_, double greyscale_, double phase_, int fullscreen_)
+	void init(int width_, int height_, double step_, double x_, double y_, double scale_, double greyScale_, double phase_, int fullScreen_)
 
 	{
 
@@ -41,11 +42,10 @@ public:
 		x = x_;
 		y = y_;
 		scale = scale_;
-		pointsize = 1;
-		greyscale = greyscale_;
+		pointSize = 1;
+		greyScale = greyScale_;
 		phase = phase_;
-		fullscreen = fullscreen_;
-		//supersample = supersample_;
+		fullScreen = fullScreen_;
 
 		ratio = height / (double)width;
 	
@@ -75,22 +75,60 @@ public:
 
 		ratio = height / (double)width;
 
-		int start_s = clock();
+		if (ratio > 1.0)
+
+		{
+
+			res = height;
+			xRatio = 1.0 / ratio;
+			yRatio = 1;
+
+		}
+
+		else
+
+		{
+
+			res = width;
+			xRatio = 1;
+			yRatio = ratio;
+
+		}
+
+		int startS = clock();
 
 		if (init != 1)
 
 		{
 
-			x += ((2.0 / (width*0.5))*cursx - 2.0) / scale;
-			y += ((-ratio * 2.0 / (height*0.5))*(cursy)+ratio * 2.0) / scale;
+			x += ((2.0 / (width*0.5))*xCurs - 2.0) / scale;
+			y += ((-ratio * 2.0 / (height*0.5))*(yCurs) + ratio * 2.0) / scale;
 
 		}
 
 
 		scale *= local_step;
 		mandel.scale = scale / 2.0;
-		mandel.edgex = -2.0 / scale + x;
-		mandel.edgey = -2.0*ratio / scale + y;
+
+		if (ratio > 1.0)
+
+		{
+
+			mandel.xEdge = -2.0 / ((double)scale) + x;
+			mandel.yEdge = -2.0*ratio / ((double)scale) + y;
+
+		}
+
+		else
+
+		{
+
+			mandel.xEdge = -2.0 / ((double)scale) + x;
+			mandel.yEdge = -2.0 / ((double)scale)*ratio + y;
+
+		}
+
+		
 
 
 		std::cout.precision(20);
@@ -101,12 +139,14 @@ public:
 
 		mandel.colorArr.resize(res*res);
 		mandel.cpx.resize(res*res);
-		mandel.calcMandel(res, ratio);
+		mandel.calcMandel(res, xRatio, yRatio);
 		mandel.size = res;
 
-		int stop_s = clock();
+		int stopS = clock();
 
-		std::cout << "\rRender Time: " << (stop_s - start_s) / double(CLOCKS_PER_SEC) * 1000 << "                           " << std::endl;
+		std::cout << "\rRender Time: " << (stopS - startS) / double(CLOCKS_PER_SEC) * 1000 << "                           " << std::endl;
+		std::cout << mandel.yEdge << std::endl;
+		std::cout << mandel.xEdge << std::endl;
 
 	}
 
@@ -115,25 +155,46 @@ public:
 	{
 
 		complex c;
-		long double q, r, g, b;
+		double q, r, g, b;
 
 		ratio = height / (double)width;
+
+		if (ratio > 1.0)
+
+		{
+
+			xRatio = 1.0 / ratio;
+			yRatio = 1;
+
+		}
+
+		else
+
+		{
+
+			xRatio = 1;
+			yRatio = ratio;
+
+		}
+
+		//std::cout << xRatio << std::endl;
+		//std::cout << ratio << std::endl;
 
 		glBegin(GL_POINTS);
 
 
-		for (int i = 0; i < mandel.size; i++)
+		for (int i = 0; i < ceil(mandel.size*xRatio); i++)
 
 		{
 
-			for (int j = 0; j < ceil(mandel.size*ratio); j++)
+			for (int j = 0; j < ceil(mandel.size*yRatio); j++)
 
 			{
 
 				c = mandel.cpx[i][j];
 				q = 1 - mandel.colorArr[i][j];
 
-				if (greyscale >= 1)
+				if (greyScale >= 1)
 
 				{
 
@@ -147,8 +208,8 @@ public:
 
 				{
 
-					r = sin(2 * pi *q)*sin(2 * pi *q);
-					g = sin(phase* pi *q)*sin(2 * pi *q);
+					r = sin(2 * PI *q)*sin(2 * PI *q);
+					g = sin(phase* PI *q)*sin(2 * PI *q);
 					b = q;
 
 				}
@@ -166,7 +227,7 @@ public:
 
 	}
 
-	void mouse_callback(GLFWwindow* window, int button, int action, int mods)
+	void mouseCallback(GLFWwindow* window, int button, int action, int mods)
 
 	{
 
@@ -200,14 +261,14 @@ public:
 
 			file >> width;
 			file >> height;
-			file >> fullscreen;
+			file >> fullScreen;
 			file >> step;
 			file >> x;
 			file >> y;
 			file >> scale;
-			file >> greyscale;
+			file >> greyScale;
 
-			if (greyscale != 1)
+			if (greyScale != 1)
 
 			{
 
@@ -229,7 +290,7 @@ public:
 
 		}
 		
-		init(width, height, step, x, y, scale, greyscale, phase, fullscreen);
+		init(width, height, step, x, y, scale, greyScale, phase, fullScreen);
 
 
 	}
@@ -246,14 +307,14 @@ public:
 
 			file << width << std::endl;
 			file << height << std::endl;
-			file << fullscreen << std::endl;
+			file << fullScreen << std::endl;
 			file << step << std::endl;
 			file << x << std::endl;
 			file << y << std::endl;
 			file << scale << std::endl;
-			file << greyscale << std::endl;
+			file << greyScale << std::endl;
 
-			if (greyscale != 1)
+			if (greyScale != 1)
 
 			{
 
@@ -320,14 +381,14 @@ int main()
 
 	program p;
 
-	int width, height, greyscale, newconfig, fullscreen;
+	int width, height, greyScale, newConfig, fullScreen;
 	double step, x, y, scale, phase;
 
 	//Input
 	std::cout << "Write New Config? (1 for yes 0 for no): ";
-	std::cin >> newconfig;
+	std::cin >> newConfig;
 
-	if (newconfig != 0)
+	if (newConfig != 0)
 
 	{
 
@@ -338,7 +399,7 @@ int main()
 		//std::cout << "\nSuper Sample (experimental, 1 for off): ";
 		//std::cin >> supersample;
 		std::cout << "\nFull Screen (0 for windowed, 1 for fullscreen): ";
-		std::cin >> fullscreen;
+		std::cin >> fullScreen;
 		std::cout << "\nZoom Step (2-20): ";
 		std::cin >> step;
 		std::cout << "\nInit Position x: ";
@@ -348,9 +409,9 @@ int main()
 		std::cout << "\nInit Zoom: ";
 		std::cin >> scale;
 		std::cout << "\nGreyScale? (1 for grey scale 0 for color): ";
-		std::cin >> greyscale;
+		std::cin >> greyScale;
 
-		if (greyscale == 0)
+		if (greyScale == 0)
 
 		{
 
@@ -359,7 +420,7 @@ int main()
 
 		}
 
-		p.init(width, height, step, x, y, scale, greyscale, phase, fullscreen);
+		p.init(width, height, step, x, y, scale, greyScale, phase, fullScreen);
 		p.writeConfig();
 
 		if (step == 0 || scale == 0)
@@ -394,7 +455,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	GLFWwindow* window;
 
-	if (p.fullscreen == 1)
+	if (p.fullScreen == 1)
 
 	{
 
@@ -464,15 +525,15 @@ int main()
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(1.0, 1.0, 1.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glPointSize(p.pointsize);
+		glPointSize(p.pointSize);
 
 		//Drawing
 
 		p.draw();
 
-		glfwGetCursorPos(window, &p.cursx, &p.cursy);
+		glfwGetCursorPos(window, &p.xCurs, &p.yCurs);
 		glfwSetMouseButtonCallback(window, mouseButtonCallback);
-		glfwSetKeyCallback(window, key_CallBack);
+		glfwSetKeyCallback(window, keyCallback);
 
 		//Swap Buffer and Check Events
 		glfwSwapBuffers(window);
@@ -493,11 +554,11 @@ void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 	void* ptr = glfwGetWindowUserPointer(window);
 	program *kptr = static_cast<program*>(ptr);
 
-	kptr->mouse_callback(window, button, action, mods);
+	kptr->mouseCallback(window, button, action, mods);
 
 }
 
-void key_CallBack(GLFWwindow *window, int button, int scancode, int action, int mods)
+void keyCallback(GLFWwindow *window, int button, int scancode, int action, int mods)
 
 {
 	

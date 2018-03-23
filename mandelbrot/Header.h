@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 
-#define pi 3.14159
+#define PI 3.14159
 
 
 class complex
@@ -98,7 +98,7 @@ double inMandel(complex c)
 
 }
 
-class mandel_class
+class mandelClass
 
 {
 
@@ -106,18 +106,18 @@ public:
 		
 	std::vector<std::vector<complex>> cpx;
 	std::vector<std::vector<double>> colorArr;
-	double edgex;
-	double edgey;
+	double xEdge;
+	double yEdge;
 	double scale;
 	int size;
 
-	void calcMandel(int order, double ratio)
+	void calcMandel(int order, double xRatio, double yRatio)
 
 	{
 		double progress;
-		double k = 2.0 / (order*scale);
+		double k = 2.0 / (order*scale*xRatio);
 	
-		for (int i = 0; i < order; i++)
+		for (int i = 0; i < ceil(order*xRatio); i++)
 
 		{
 			
@@ -129,7 +129,7 @@ public:
 
 					{
 
-						threadCalc(i, order, ratio, k);
+						threadCalc(i, order, xRatio, yRatio, k);
 
 					}
 
@@ -151,10 +151,10 @@ public:
 
 			}
 
-			progress = 100.0*(i*i) / (order*order);
+			progress = 100.0*(i*i) / (order*order*xRatio);
 			progress = round(progress);
 			std::cout.precision(0);
-			std::cout << "\rProgress:  " << progress << "% completed for res = " << order;
+			std::cout << "\rProgress:  " << progress << "% completed for res = " << order*xRatio;
 	
 		}
 
@@ -162,33 +162,33 @@ public:
 
 private:
 	
-	void threadCalc(int i, int order, double ratio, double k)
+	void threadCalc(int i, int order, double xRatio, double yRatio, double k)
 
 	{
 		complex c;
 		double color;
 		std::vector<complex> buffer(order);
-		std::vector<double> bufcol(order);
+		std::vector<double> bufferColor(order);
 
-		double x0 = edgex + ((double)i * k);
+		double x = xEdge + ((double)i * k);
 
-		for (int j = 0; j < ceil(order*ratio); j++)
+		for (int j = 0; j < ceil(order*yRatio); j++)
 
 		{
 
 
-			c.set(x0, edgey + (double)j * k);
+			c.set(x, yEdge + (double)j * k);
 
 
 			color = inMandel(c);
 
-			bufcol[j] = color;
+			bufferColor[j] = color;
 			buffer[j] = c;
 
 		}
 
 		cpx[i] = buffer;
-		colorArr[i] = bufcol;
+		colorArr[i] = bufferColor;
 
 	}
 
