@@ -145,8 +145,6 @@ public:
 		int stopS = clock();
 
 		std::cout << "\rRender Time: " << (stopS - startS) / double(CLOCKS_PER_SEC) * 1000 << "                           " << std::endl;
-		std::cout << mandel.yEdge << std::endl;
-		std::cout << mandel.xEdge << std::endl;
 
 	}
 

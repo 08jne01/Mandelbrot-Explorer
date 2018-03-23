@@ -154,7 +154,7 @@ public:
 			progress = 100.0*(i*i) / (order*order*xRatio);
 			progress = round(progress);
 			std::cout.precision(0);
-			std::cout << "\rProgress:  " << progress << "% completed for res = " << order*xRatio;
+			std::cout << "\rProgress:  " << progress << "% completed for res = " << order;
 	
 		}
 
