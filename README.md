@@ -31,7 +31,7 @@ Once loaded the image will render, then simply click where you wish to zoom and 
 
 **Installation:**
 
-Drop mandelbrot_(version).exe into a folder. If you run the program in program files (or any protected folders) you have to run it as administrator. otherwise it will not be able to write the configuration file and coordinates file. Run the program for the first time and type 1 for new config.
+Drop mandelbrot_(version).exe into a folder. If you run the program in program files (or any protected folders) you have to run it as administrator. Otherwise it will not be able to write the configuration file and coordinates file. Run the program for the first time and type 1 for new config.
 
 **Configuration:**
 
