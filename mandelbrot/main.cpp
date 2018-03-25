@@ -18,6 +18,7 @@ private:
 	double scale;
 	int greyScale;
 	int res;
+	int calculated;
 
 
 
@@ -46,6 +47,7 @@ public:
 		greyScale = greyScale_;
 		phase = phase_;
 		fullScreen = fullScreen_;
+		calculated = 0;
 
 		ratio = height / (double)width;
 	
@@ -74,6 +76,7 @@ public:
 	{
 
 		ratio = height / (double)width;
+		calculated = 0;
 
 		if (ratio > 1.0)
 
@@ -137,14 +140,16 @@ public:
 		std::cout.precision(1);
 		std::cout << "Zoom Level = " << scale << std::endl;
 
+		mandel.size = res;
 		mandel.colorArr.resize(res*res);
 		mandel.cpx.resize(res*res);
 		mandel.calcMandel(res, xRatio, yRatio);
-		mandel.size = res;
 
 		int stopS = clock();
 
 		std::cout << "\rRender Time: " << (stopS - startS) / double(CLOCKS_PER_SEC) * 1000 << "                           " << std::endl;
+
+		calculated = 1;
 
 	}
 
@@ -152,77 +157,80 @@ public:
 
 	{
 
-		complex c;
-		double q, r, g, b;
-
-		ratio = height / (double)width;
-
-		if (ratio > 1.0)
+		//std::cout << calculated << std::endl;
+		if (calculated == 1)
 
 		{
 
-			xRatio = 1.0 / ratio;
-			yRatio = 1;
-
-		}
-
-		else
-
-		{
-
-			xRatio = 1;
-			yRatio = ratio;
-
-		}
-
-		//std::cout << xRatio << std::endl;
-		//std::cout << ratio << std::endl;
-
-		glBegin(GL_POINTS);
+			complex c;
+			double q, r, g, b;
 
 
-		for (int i = 0; i < ceil(mandel.size*xRatio); i++)
+			ratio = height / (double)width;
 
-		{
-
-			for (int j = 0; j < ceil(mandel.size*yRatio); j++)
+			if (ratio > 1.0)
 
 			{
 
-				c = mandel.cpx[i][j];
-				q = 1 - mandel.colorArr[i][j];
-
-				if (greyScale >= 1)
-
-				{
-
-					r = q;
-					g = q;
-					b = q;
-
-				}
-
-				else
-
-				{
-
-					r = sin(2 * PI *q)*sin(2 * PI *q);
-					g = sin(phase* PI *q)*sin(2 * PI *q);
-					b = q;
-
-				}
-
-				glColor3d(r, g, b);
-				glVertex2d(((c.re) - x)*0.5*scale, ((c.im)  - y)*0.5*scale / ratio);
-
-				mandel.cpx[i][j];
-				mandel.colorArr[i][j];
+				xRatio = 1.0 / ratio;
+				yRatio = 1;
 
 			}
 
-		}
-		glEnd();
+			else
 
+			{
+
+				xRatio = 1;
+				yRatio = ratio;
+
+			}
+
+			//std::cout << xRatio << std::endl;
+			//std::cout << ratio << std::endl;
+
+			glBegin(GL_POINTS);
+
+
+			for (int i = 0; i < ceil(mandel.size*xRatio); i++)
+
+			{
+
+				for (int j = 0; j < ceil(mandel.size*yRatio); j++)
+
+				{
+
+					c = mandel.cpx[i][j];
+					q = 1 - mandel.colorArr[i][j];
+
+					if (greyScale >= 1)
+
+					{
+
+						r = q;
+						g = q;
+						b = q;
+
+					}
+
+					else
+
+					{
+
+						r = sin(2 * PI *q)*sin(2 * PI *q);
+						g = sin(phase* PI *q)*sin(2 * PI *q);
+						b = q;
+
+					}
+
+					glColor3d(r, g, b);
+					glVertex2d(((c.re) - x)*0.5*scale, ((c.im) - y)*0.5*scale / ratio);
+
+				}
+
+			}
+			glEnd();
+		}
 	}
 
 	void mouseCallback(GLFWwindow* window, int button, int action, int mods)
@@ -497,21 +505,21 @@ int main()
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
-	std::thread calc
+	//std::thread calc
 
-	{
+	//{
 
-		[&]()
+		//[&]()
 
-		{
+		//{
 
 			p.update(1.0, 1);
 
-		}
+		//}
 
-	};
+	//};
 
-	calc.detach();
+	//calc.join();
 
 	//Render Thread
 	while (!glfwWindowShouldClose(window))
