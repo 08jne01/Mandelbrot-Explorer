@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <GLFW/glfw3.h>
 #include <thread>
 #include <vector>
 #include <ctime>
@@ -8,6 +7,7 @@
 #include <sstream>
 #include <condition_variable>
 #include <mutex>
+#include <GLFW/glfw3.h>
 
 #define PI 3.14159
 
@@ -67,7 +67,7 @@ public:
 
 };
 
-double inMandel(complex c)
+double inMandel(complex c, int itterations)
 
 {
 
@@ -75,7 +75,7 @@ double inMandel(complex c)
 
 	zPrev.re = 0.0;
 	zPrev.im = 0.0;
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < itterations; i++)
 
 	{
 
@@ -91,7 +91,7 @@ double inMandel(complex c)
 
 		{
 
-			return (i) / (double)999.0;
+			return (i) / (double)(itterations - 1);
 
 		}
 
@@ -114,7 +114,7 @@ public:
 	double scale;
 	int size;
 
-	void calcMandel(int order, double xRatio, double yRatio)
+	void calcMandel(int order, double xRatio, double yRatio, int itters)
 
 	{
 		double progress;
@@ -130,7 +130,7 @@ public:
 
 		{
 
-			threads.push_back(std::thread([&]() { threadCalc(i, order, xRatio, yRatio, k, numThreads); }));
+			threads.push_back(std::thread([&]() { threadCalc(i, order, xRatio, yRatio, k, numThreads, itters); }));
 
 			progress = 100.0*(i*i*numThreads*numThreads) / (order*order*xRatio*xRatio);
 			progress = round(progress);
@@ -161,7 +161,7 @@ public:
 
 private:
 	
-	void threadCalc(int i, int order, double xRatio, double yRatio, double k, int threads)
+	void threadCalc(int i, int order, double xRatio, double yRatio, double k, int threads, int itters)
 
 	{
 
@@ -188,7 +188,7 @@ private:
 					c.set(x, yEdge + (double)j * k);
 
 
-					color = inMandel(c);
+					color = inMandel(c, itters);
 
 					bufferColor[j] = color;
 					buffer[j] = c;

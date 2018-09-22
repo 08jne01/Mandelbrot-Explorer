@@ -19,6 +19,8 @@ private:
 	int greyScale;
 	int res;
 	int calculated;
+	int itters;
+	float phaseincrease;
 
 
 
@@ -48,6 +50,7 @@ public:
 		phase = phase_;
 		fullScreen = fullScreen_;
 		calculated = 0;
+		itters = 1000;
 
 		ratio = height / (double)width;
 	
@@ -139,11 +142,12 @@ public:
 		std::cout << "y = " << y << std::endl;
 		std::cout.precision(1);
 		std::cout << "Zoom Level = " << scale << std::endl;
+		std::cout << "Itterations = " << itters << std::endl;
 
 		mandel.size = res;
 		mandel.colorArr.resize(res*res);
 		mandel.cpx.resize(res*res);
-		mandel.calcMandel(res, xRatio, yRatio);
+		mandel.calcMandel(res, xRatio, yRatio, itters);
 
 		int stopS = clock();
 
@@ -189,6 +193,7 @@ public:
 			//std::cout << xRatio << std::endl;
 			//std::cout << ratio << std::endl;
 
+			phase += phaseincrease*0.1;
 			glBegin(GL_POINTS);
 
 
@@ -224,7 +229,7 @@ public:
 					}
 
 					glColor3d(r, g, b);
-					glVertex2d(((c.re) - x)*0.5*scale, ((c.im) - y)*0.5*scale / ratio);
+					glVertex2d(c.re*0.5*scale - x*0.5*scale, (c.im*0.5*scale - y*0.5*scale) / ratio);
 
 				}
 
@@ -325,7 +330,7 @@ public:
 			{
 
 				file.precision(20);
-				file << x << std::endl;
+				file << phase << std::endl;
 
 			}
 
@@ -341,6 +346,102 @@ public:
 
 		}
 
+	}
+
+	void keyCallBack(int key, int pressed)
+
+	{
+
+		if (pressed == GLFW_PRESS)
+
+		{
+
+			switch (key)
+
+			{
+
+				case GLFW_KEY_SPACE:
+
+				{
+
+					writeCoords();
+					break;
+
+				}
+
+				case GLFW_KEY_LEFT:
+
+				{
+
+					phaseincrease = -1;
+					break;
+
+				}
+
+				case GLFW_KEY_RIGHT:
+
+				{
+
+					phaseincrease = 1;
+					break;
+
+				}
+
+				case GLFW_KEY_UP:
+
+				{
+
+					itters *= 1.5;
+					update(1.0, 1);
+					break;
+
+				}
+
+				case GLFW_KEY_DOWN:
+
+				{
+
+					itters /= 1.5;
+					update(1.0, 1);
+					break;
+
+				}
+
+			}
+
+
+		}
+
+		else if (pressed == GLFW_RELEASE)
+
+		{
+
+			switch (key)
+
+			{
+
+				case GLFW_KEY_LEFT:
+
+				{
+
+					phaseincrease = 0;
+					break;
+
+				}
+
+				case GLFW_KEY_RIGHT:
+
+				{
+
+				phaseincrease = 0;
+				break;
+
+				}
+
+			}
+
+		}
+		
 	}
 
 	void writeCoords()
@@ -529,7 +630,7 @@ int main()
 		glfwGetFramebufferSize(window, &p.width, &p.height);
 		glViewport(0, 0, p.width, p.height);
 		glDisable(GL_DEPTH_TEST);
-		glClearColor(1.0, 1.0, 1.0, 1.0);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glPointSize(p.pointSize);
 
@@ -571,12 +672,6 @@ void keyCallback(GLFWwindow *window, int button, int scancode, int action, int m
 	void* ptr = glfwGetWindowUserPointer(window);
 	program *kptr = static_cast<program*>(ptr);
 
-	if (button == GLFW_KEY_SPACE && action == GLFW_PRESS)
-
-	{
-
-		kptr->writeCoords();
-
-	}
+	kptr->keyCallBack(button, action);
 
 }
