@@ -1,611 +1,17 @@
 #include "Header.h"
-
-static void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-static void keyCallback(GLFWwindow *window, int button, int scancode, int action, int mods);
-
-class program
-
-{
-
-private:
-	double step;
-	double ratio;
-	double phase;
-	double xRatio;
-	double yRatio;
-	double x;
-	double y;
-	double scale;
-	int greyScale;
-	int res;
-	int calculated;
-	int itters;
-	float phaseincrease;
-
-
-
-public:
-
-	mandelClass mandel;
-
-	double xCurs;
-	double yCurs;
-	double pointSize;
-	int width;
-	int height;
-	int fullScreen;
-
-	void init(int width_, int height_, double step_, double x_, double y_, double scale_, double greyScale_, double phase_, int fullScreen_)
-
-	{
-
-		width = width_;
-		height = height_;
-		step = step_;
-		x = x_;
-		y = y_;
-		scale = scale_;
-		pointSize = 1;
-		greyScale = greyScale_;
-		phase = phase_;
-		fullScreen = fullScreen_;
-		calculated = 0;
-		itters = 1000;
-	
-		if (width > height)
-
-		{
-
-			res = width;
-
-		}
-
-		else if (height > width)
-
-		{
-
-
-			res = height;
-
-		}
-
-
-	}
-
-	void update(double local_step, int init)
-
-	{
-
-		ratio = height / (double)width;
-		calculated = 0;
-
-		if (ratio > 1.0)
-
-		{
-
-			res = height;
-			xRatio = 1.0 / ratio;
-			yRatio = 1;
-
-		}
-
-		else
-
-		{
-
-			res = width;
-			xRatio = 1;
-			yRatio = ratio;
-
-		}
-
-		int startS = clock();
-
-		if (init != 1)
-
-		{
-
-			x += ((2.0 / (width*0.5))*xCurs - 2.0) / scale;
-			y += ((-ratio * 2.0 / (height*0.5))*(yCurs) + ratio * 2.0) / scale;
-
-		}
-
-
-		scale *= local_step;
-		mandel.scale = scale / 2.0;
-
-		if (ratio > 1.0)
-
-		{
-
-			mandel.xEdge = -2.0 / ((double)scale) + x;
-			mandel.yEdge = -2.0*ratio / ((double)scale) + y;
-
-		}
-
-		else
-
-		{
-
-			mandel.xEdge = -2.0 / ((double)scale) + x;
-			mandel.yEdge = -2.0 / ((double)scale)*ratio + y;
-
-		}
-
-		
-
-
-		std::cout.precision(20);
-		std::cout << "\nx = " << x << std::endl;
-		std::cout << "y = " << y << std::endl;
-		std::cout.precision(1);
-		std::cout << "Zoom Level = " << scale << std::endl;
-		std::cout << "Itterations = " << itters << std::endl;
-
-		mandel.size = res;
-		mandel.colorArr.resize(res*res);
-		mandel.cpx.resize(res*res);
-		mandel.calcMandel(res, xRatio, yRatio, itters);
-
-		int stopS = clock();
-
-		std::cout << "\rRender Time: " << (stopS - startS) / double(CLOCKS_PER_SEC) * 1000 << " ms" <<  "                           " << std::endl;
-
-		calculated = 1;
-
-	}
-
-	void draw()
-
-	{
-
-		//std::cout << calculated << std::endl;
-		if (calculated == 1)
-
-		{
-
-			complex c;
-			double q, r, g, b;
-
-
-			ratio = height / (double)width;
-
-			if (ratio > 1.0)
-
-			{
-
-				xRatio = 1.0 / ratio;
-				yRatio = 1;
-
-			}
-
-			else
-
-			{
-
-				xRatio = 1;
-				yRatio = ratio;
-
-			}
-
-			//std::cout << xRatio << std::endl;
-			//std::cout << ratio << std::endl;
-
-			phase += phaseincrease*0.1;
-			glPointSize(1);
-			glBegin(GL_POINTS);
-
-
-			for (int i = 0; i < ceil(mandel.size*xRatio); i++)
-
-			{
-
-				for (int j = 0; j < ceil(mandel.size*yRatio); j++)
-
-				{
-
-					//c = mandel.cpx[i][j];
-					q = 1 - mandel.colorArr[i][j];
-
-					if (greyScale >= 1)
-
-					{
-
-						r = q;
-						g = q;
-						b = q;
-
-					}
-
-					else
-
-					{
-
-						r = sin(2 * PI *q)*sin(2 * PI *q);
-						g = sin(phase* PI *q)*sin(2 * PI *q);
-						b = q;
-
-					}
-
-					glColor3d(r, g, b);
-					//glVertex2d(c.re*0.5*scale - x*0.5*scale, (c.im*0.5*scale - y*0.5*scale) / ratio);
-					glVertex2d(coordTransform(i, width), coordTransform(j, height));
-					
-
-				}
-
-			}
-			glEnd();
-		}
-	}
-
-	int roundDownNearest(int val, int multiple)
-
-	{
-
-		if (val % multiple == 0)
-
-		{
-
-			return val;
-
-		}
-
-		else
-
-		{
-
-			return (val - (val % multiple));
-
-		}
-
-
-	}
-
-	std::string currentTime()
-
-	{
-
-		time_t rawTime;
-		struct tm time_info;
-		time(&rawTime);
-		localtime_s(&time_info, &rawTime);
-		std::ostringstream os;
-
-		os << " " << time_info.tm_mday << "-" << time_info.tm_mon + 1 << "-" << time_info.tm_year + 1900 << "_" << time_info.tm_hour << time_info.tm_min << time_info.tm_sec;
-
-		return os.str();
-
-
-	}
-
-	void saveBMP(std::string filename)
-
-	{
-
-		char *filenameCharArray = (char*) malloc(sizeof(char) * (filename.size() + 1));
-		strcpy_s(filenameCharArray, filename.size() + 1, filename.c_str());
-
-		FILE *out;
-		fopen_s(&out, filenameCharArray, "wb");
-		byte* buff = new byte[width*height * 3];
-
-		int tempWidth = roundDownNearest(width,4);
-		int tempHeight = height;
-
-		glReadBuffer(GL_BACK);
-		glReadPixels(0, 0, tempWidth, tempHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, buff);
-
-		if (!out || !buff)
-
-		{
-
-			std::cout << "Error Writing to File!" << std::endl;
-			return;
-
-		}
-
-		BITMAPFILEHEADER bitmapFileHeader;
-		BITMAPINFOHEADER bitmapInfoHeader;
-
-		bitmapFileHeader.bfType = 0x4D42;
-		bitmapFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + tempWidth * tempHeight * 3;
-		bitmapFileHeader.bfReserved1 = 0;
-		bitmapFileHeader.bfReserved2 = 0;
-		bitmapFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-		bitmapInfoHeader.biSize = sizeof(BITMAPINFOHEADER);
-		bitmapInfoHeader.biWidth = tempWidth - 1;
-		bitmapInfoHeader.biHeight = tempHeight - 1;
-		bitmapInfoHeader.biPlanes = 1;
-		bitmapInfoHeader.biBitCount = 24;
-		bitmapInfoHeader.biCompression = BI_RGB;
-		bitmapInfoHeader.biSizeImage = 0;
-		bitmapInfoHeader.biXPelsPerMeter = 0;
-		bitmapInfoHeader.biYPelsPerMeter = 0;
-		bitmapInfoHeader.biClrUsed = 0;
-		bitmapInfoHeader.biClrImportant = 0;
-
-		fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, out);
-		fwrite(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, out);
-		fwrite(buff, tempWidth*tempHeight * 3, 1, out);
-		fclose(out);
-		delete[] buff;
-
-		//std::cout << "Width: " << tempWidth << " Height: " << tempHeight << std::endl;
-		std::cout << filename << " saved!" << std::endl;
-
-
-	}
-
-	double coordTransform(double pixel, int dimension)
-
-	{
-
-		double screenpos;
-
-
-		screenpos = ((2 * pixel) / (float)dimension) - 1;
-
-		return screenpos;
-
-	}
-
-	void mouseCallback(GLFWwindow* window, int button, int action, int mods)
-
-	{
-
-		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-
-		{
-
-			update(step, 0);
-
-		}
-
-		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-
-		{
-
-			update(1.0 / step, 0);
-
-		}
-
-	}
-
-	void readConfig()
-
-	{
-
-		std::ifstream file("config.ini");
-
-		if (file.is_open())
-
-		{
-
-			file >> width;
-			file >> height;
-			file >> fullScreen;
-			file >> step;
-			file >> x;
-			file >> y;
-			file >> scale;
-			file >> greyScale;
-
-			if (greyScale != 1)
-
-			{
-
-				file >> phase;
-
-			}
-
-			file.close();
-
-		}
-
-		else
-
-		{
-
-			std::cout << "File could not be opened. Please run again and create config!" << std::endl;
-			system("PAUSE");
-			exit(EXIT_FAILURE);
-
-		}
-		
-		init(width, height, step, x, y, scale, greyScale, phase, fullScreen);
-
-
-	}
-
-	void writeConfig()
-
-	{
-
-		std::ofstream file("config.ini");
-
-		if (file.is_open())
-
-		{
-
-			file << width << std::endl;
-			file << height << std::endl;
-			file << fullScreen << std::endl;
-			file << step << std::endl;
-			file << x << std::endl;
-			file << y << std::endl;
-			file << scale << std::endl;
-			file << greyScale << std::endl;
-
-			if (greyScale != 1)
-
-			{
-
-				file.precision(20);
-				file << phase << std::endl;
-
-			}
-
-			file.close();
-
-		}
-
-		else
-
-		{
-
-			std::cout << "File could not be opened." << std::endl;
-
-		}
-
-	}
-
-	void keyCallBack(int key, int pressed)
-
-	{
-
-		if (pressed == GLFW_PRESS)
-
-		{
-
-			switch (key)
-
-			{
-
-				case GLFW_KEY_SPACE:
-
-				{
-
-					std::string s = "Screenshot ";
-					s += currentTime();
-					s += ".bmp";
-					writeCoords(s);
-					saveBMP(s);
-					break;
-
-				}
-
-				case GLFW_KEY_LEFT:
-
-				{
-
-					phaseincrease = -1;
-					break;
-
-				}
-
-				case GLFW_KEY_RIGHT:
-
-				{
-
-					phaseincrease = 1;
-					break;
-
-				}
-
-				case GLFW_KEY_UP:
-
-				{
-
-					itters *= 1.5;
-					update(1.0, 1);
-					break;
-
-				}
-
-				case GLFW_KEY_DOWN:
-
-				{
-
-					itters /= 1.5;
-					update(1.0, 1);
-					break;
-
-				}
-
-			}
-
-
-		}
-
-		else if (pressed == GLFW_RELEASE)
-
-		{
-
-			switch (key)
-
-			{
-
-				case GLFW_KEY_LEFT:
-
-				{
-
-					phaseincrease = 0;
-					break;
-
-				}
-
-				case GLFW_KEY_RIGHT:
-
-				{
-
-				phaseincrease = 0;
-				break;
-
-				}
-
-			}
-
-		}
-		
-	}
-
-	void writeCoords(std::string s)
-
-	{
-
-		std::ofstream file;
-
-		file.open("coords.txt", std::ios::app);
-
-		if (file.is_open())
-
-		{
-
-			file.precision(20);
-			file << "Re = " << x << " Im = " << y;
-			file.precision(3);
-			file << " Scale = " << scale;
-			file << "Screenshot timestamp: " << s;
-			file.close();
-
-			std::cout << "\nCoords copied to file!" << std::endl;
-
-		}
-
-		else
-
-		{
-
-			std::cout << "File could not be opened." << std::endl;
-
-		}
-
-	}
-
-};
-
+#include "Complex.h"
+#include "InMandel.h"
+#include "MandelClass.h"
+#include "Program.h"
+#include "CallBack.h"
 
 int main()
 
 {
-
 	std::cout << "Mandelbrot Explorer, by Joshua Nelson." << std::endl;
 	std::cout << "Copyright Joshua Nelson 2018." << std::endl << std::endl;
 
-	program p;
-
+	//Variables for config file or user input
 	int width, height, greyScale, newConfig, fullScreen;
 	double step, x, y, scale, phase;
 
@@ -613,16 +19,17 @@ int main()
 	std::cout << "Write New Config? (1 for yes 0 for no): ";
 	std::cin >> newConfig;
 
+	//Define program
+	program p;
+
+	//Checks if new config is required and writes new values to a file
 	if (newConfig != 0)
 
 	{
-
 		std::cout << "\nWindow Width (500 - 2000 Pixels): ";
 		std::cin >> width;
 		std::cout << "\nWindow Height (500 - 2000 Pixels): ";
 		std::cin >> height;
-		//std::cout << "\nSuper Sample (experimental, 1 for off): ";
-		//std::cin >> supersample;
 		std::cout << "\nFull Screen (0 for windowed, 1 for fullscreen): ";
 		std::cin >> fullScreen;
 		std::cout << "\nZoom Step (2-20): ";
@@ -639,157 +46,121 @@ int main()
 		if (greyScale == 0)
 
 		{
-
 			std::cout << "\nColor Index (-2 - 2): ";
 			std::cin >> phase;
-
 		}
 
+		//Initialises the program with all variables from config/user input
 		p.init(width, height, step, x, y, scale, greyScale, phase, fullScreen);
 		p.writeConfig();
 
 		if (step == 0 || scale == 0)
 
 		{
-
 			std::cout << "Divide by Zero Error please re-do the config more carefully!" << std::endl;
 			system("PAUSE");
 			exit(EXIT_FAILURE);
-
 		}
-
 	}
 	
 	else
 
 	{
-
 		p.readConfig();
-
 	}
 
+	//Check for GLFW initilisation
 	if (!glfwInit())
 
 	{
-
+		std::cout << "GLFW did not initialise!" << std::endl;
+		system("PAUSE");
 		exit(EXIT_FAILURE);
-
 	}
 
+	//Setup window pointer
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	GLFWwindow* window;
 
+	//Choose fullscreen or not depending on the config and then set window pointer
 	if (p.fullScreen == 1)
 
 	{
-
 		window = glfwCreateWindow(p.width, p.height, "MandleBrot", glfwGetPrimaryMonitor(), NULL);
-
 	}
 
 	else
 
 	{
-
 		window = glfwCreateWindow(p.width, p.height, "MandleBrot", NULL, NULL);
-
 	}
-	
 
-	//glEnable(GL_MULTISAMPLE);
-
-	/*
-	if (p.supersample != 1)
-
-	{
-
-		glfwWindowHint(GLFW_SAMPLES, p.supersample);
-
-	}
-	*/
-
+	//Setup pointer associated with the window, this is important for accessing program variables when using callbacks
 	glfwSetWindowUserPointer(window, &p);
 
+	//Check if the window has initilised properly
 	if (!window)
 
 	{
-
-		std::cout << "Print";
+		std::cout << "Window did not initialise!";
 		glfwTerminate();
+		system("PAUSE");
 		exit(EXIT_FAILURE);
-
 	}
 
+	//Select window and set swap interval for buffers
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
-	//std::thread calc
+	//Initial render of the mandelbrot based on config settings
+	p.update(1.0, 1);
 
-	//{
-
-		//[&]()
-
-		//{
-
-			p.update(1.0, 1);
-
-		//}
-
-	//};
-
-	//calc.join();
-
-	//Render Thread
+	//Start of the program loop
 	while (!glfwWindowShouldClose(window))
 
 	{
-		//Setup
+		//Setup of frame
 		glfwGetFramebufferSize(window, &p.width, &p.height);
 		glViewport(0, 0, p.width, p.height);
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glPointSize(p.pointSize);
 
 		//Drawing
-
 		p.draw();
 
+		//Gets cursor positions and sets the callbacks for keys and mouse
 		glfwGetCursorPos(window, &p.xCurs, &p.yCurs);
 		glfwSetMouseButtonCallback(window, mouseButtonCallback);
 		glfwSetKeyCallback(window, keyCallback);
 
-		//Swap Buffer and Check Events
+		//Check for callback events and swap the buffers
 		glfwPollEvents();
 		glfwSwapBuffers(window);
-
 	}
-
+	//Close everything properly
 	glfwDestroyWindow(window);
 	glfwTerminate;
 	exit(EXIT_SUCCESS);
-
 }
 
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 
 {
-
+	//Casts the pointer from the window to a program* pointer
 	void* ptr = glfwGetWindowUserPointer(window);
 	program *kptr = static_cast<program*>(ptr);
-
+	//Using the pointer calls the mouse callback
 	kptr->mouseCallback(window, button, action, mods);
-
 }
 
 void keyCallback(GLFWwindow *window, int button, int scancode, int action, int mods)
 
 {
-	
+	//Casts the pointer from the window to a program* pointer
 	void* ptr = glfwGetWindowUserPointer(window);
 	program *kptr = static_cast<program*>(ptr);
-
+	//Using the pointer calls the key callback
 	kptr->keyCallBack(button, action);
-
 }
