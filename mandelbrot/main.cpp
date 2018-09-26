@@ -51,8 +51,6 @@ public:
 		fullScreen = fullScreen_;
 		calculated = 0;
 		itters = 1000;
-
-		ratio = height / (double)width;
 	
 		if (width > height)
 
@@ -151,7 +149,7 @@ public:
 
 		int stopS = clock();
 
-		std::cout << "\rRender Time: " << (stopS - startS) / double(CLOCKS_PER_SEC) * 1000 << "                           " << std::endl;
+		std::cout << "\rRender Time: " << (stopS - startS) / double(CLOCKS_PER_SEC) * 1000 << " ms" <<  "                           " << std::endl;
 
 		calculated = 1;
 
@@ -194,6 +192,7 @@ public:
 			//std::cout << ratio << std::endl;
 
 			phase += phaseincrease*0.1;
+			glPointSize(1);
 			glBegin(GL_POINTS);
 
 
@@ -205,7 +204,7 @@ public:
 
 				{
 
-					c = mandel.cpx[i][j];
+					//c = mandel.cpx[i][j];
 					q = 1 - mandel.colorArr[i][j];
 
 					if (greyScale >= 1)
@@ -229,13 +228,127 @@ public:
 					}
 
 					glColor3d(r, g, b);
-					glVertex2d(c.re*0.5*scale - x*0.5*scale, (c.im*0.5*scale - y*0.5*scale) / ratio);
+					//glVertex2d(c.re*0.5*scale - x*0.5*scale, (c.im*0.5*scale - y*0.5*scale) / ratio);
+					glVertex2d(coordTransform(i, width), coordTransform(j, height));
+					
 
 				}
 
 			}
 			glEnd();
 		}
+	}
+
+	int roundDownNearest(int val, int multiple)
+
+	{
+
+		if (val % multiple == 0)
+
+		{
+
+			return val;
+
+		}
+
+		else
+
+		{
+
+			return (val - (val % multiple));
+
+		}
+
+
+	}
+
+	std::string currentTime()
+
+	{
+
+		time_t rawTime;
+		struct tm time_info;
+		time(&rawTime);
+		localtime_s(&time_info, &rawTime);
+		std::ostringstream os;
+
+		os << " " << time_info.tm_mday << "-" << time_info.tm_mon + 1 << "-" << time_info.tm_year + 1900 << "_" << time_info.tm_hour << time_info.tm_min << time_info.tm_sec;
+
+		return os.str();
+
+
+	}
+
+	void saveBMP(std::string filename)
+
+	{
+
+		char *filenameCharArray = (char*) malloc(sizeof(char) * (filename.size() + 1));
+		strcpy_s(filenameCharArray, filename.size() + 1, filename.c_str());
+
+		FILE *out;
+		fopen_s(&out, filenameCharArray, "wb");
+		byte* buff = new byte[width*height * 3];
+
+		int tempWidth = roundDownNearest(width,4);
+		int tempHeight = height;
+
+		glReadBuffer(GL_BACK);
+		glReadPixels(0, 0, tempWidth, tempHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, buff);
+
+		if (!out || !buff)
+
+		{
+
+			std::cout << "Error Writing to File!" << std::endl;
+			return;
+
+		}
+
+		BITMAPFILEHEADER bitmapFileHeader;
+		BITMAPINFOHEADER bitmapInfoHeader;
+
+		bitmapFileHeader.bfType = 0x4D42;
+		bitmapFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + tempWidth * tempHeight * 3;
+		bitmapFileHeader.bfReserved1 = 0;
+		bitmapFileHeader.bfReserved2 = 0;
+		bitmapFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+		bitmapInfoHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bitmapInfoHeader.biWidth = tempWidth - 1;
+		bitmapInfoHeader.biHeight = tempHeight - 1;
+		bitmapInfoHeader.biPlanes = 1;
+		bitmapInfoHeader.biBitCount = 24;
+		bitmapInfoHeader.biCompression = BI_RGB;
+		bitmapInfoHeader.biSizeImage = 0;
+		bitmapInfoHeader.biXPelsPerMeter = 0;
+		bitmapInfoHeader.biYPelsPerMeter = 0;
+		bitmapInfoHeader.biClrUsed = 0;
+		bitmapInfoHeader.biClrImportant = 0;
+
+		fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, out);
+		fwrite(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, out);
+		fwrite(buff, tempWidth*tempHeight * 3, 1, out);
+		fclose(out);
+		delete[] buff;
+
+		//std::cout << "Width: " << tempWidth << " Height: " << tempHeight << std::endl;
+		std::cout << filename << " saved!" << std::endl;
+
+
+	}
+
+	double coordTransform(double pixel, int dimension)
+
+	{
+
+		double screenpos;
+
+
+		screenpos = ((2 * pixel) / (float)dimension) - 1;
+
+		return screenpos;
+
 	}
 
 	void mouseCallback(GLFWwindow* window, int button, int action, int mods)
@@ -364,7 +477,11 @@ public:
 
 				{
 
-					writeCoords();
+					std::string s = "Screenshot ";
+					s += currentTime();
+					s += ".bmp";
+					writeCoords(s);
+					saveBMP(s);
 					break;
 
 				}
@@ -444,7 +561,7 @@ public:
 		
 	}
 
-	void writeCoords()
+	void writeCoords(std::string s)
 
 	{
 
@@ -459,7 +576,8 @@ public:
 			file.precision(20);
 			file << "Re = " << x << " Im = " << y;
 			file.precision(3);
-			file << " Scale = " << scale << std::endl;
+			file << " Scale = " << scale;
+			file << "Screenshot timestamp: " << s;
 			file.close();
 
 			std::cout << "\nCoords copied to file!" << std::endl;
@@ -643,8 +761,8 @@ int main()
 		glfwSetKeyCallback(window, keyCallback);
 
 		//Swap Buffer and Check Events
-		glfwSwapBuffers(window);
 		glfwPollEvents();
+		glfwSwapBuffers(window);
 
 	}
 

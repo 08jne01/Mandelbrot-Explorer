@@ -8,6 +8,9 @@
 #include <condition_variable>
 #include <mutex>
 #include <GLFW/glfw3.h>
+#include <windows.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define PI 3.14159
 
@@ -123,10 +126,10 @@ public:
 		int numThreads = 70;
 		double k = 2.0 / (order*scale*xRatio);
 		int isDone = 0;
-		int itterations = ceil(order*xRatio / (double)numThreads);
+		int maxThreads = ceil(order*xRatio / (double)numThreads);
 		int *ptr = &isDone;
 	
-		for (int i = 0; i < itterations; i++)
+		for (int i = 0; i < maxThreads; i++)
 
 		{
 
@@ -148,7 +151,7 @@ public:
 
 		//}
 
-		for (int i = 0; i < itterations; i++)
+		for (int i = 0; i < maxThreads; i++)
 
 		{
 
