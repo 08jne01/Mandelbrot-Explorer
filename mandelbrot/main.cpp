@@ -25,6 +25,7 @@ private:
 public:
 
 	mandelClass mandel;
+	std::vector <double>v;
 
 	double xCurs;
 	double yCurs;
@@ -324,8 +325,7 @@ public:
 
 			{
 
-				file.precision(20);
-				file << x << std::endl;
+				file << phase << std::endl;
 
 			}
 
@@ -540,6 +540,7 @@ int main()
 		glfwGetCursorPos(window, &p.xCurs, &p.yCurs);
 		glfwSetMouseButtonCallback(window, mouseButtonCallback);
 		glfwSetKeyCallback(window, keyCallback);
+		glReadPixels(); 
 
 		//Swap Buffer and Check Events
 		glfwSwapBuffers(window);

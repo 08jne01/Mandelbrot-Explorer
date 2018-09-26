@@ -6,8 +6,8 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
-#include <condition_variable>
-#include <mutex>
+//#include <condition_variable>
+//#include <mutex>
 
 #define PI 3.14159
 
@@ -118,7 +118,7 @@ public:
 
 	{
 		double progress;
-		std::condition_variable cv;
+		//std::condition_variable cv;
 		std::vector<std::thread> threads;
 		int numThreads = 70;
 		double k = 2.0 / (order*scale*xRatio);
