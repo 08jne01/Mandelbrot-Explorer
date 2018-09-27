@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{51CAA070-AD27-4D60-944E-BF8E489E520E}</ProjectGuid>
-    <RootNamespace>mandelbrot</RootNamespace>
+    <ProjectGuid>{D3EFAC6A-AEA8-4B0D-B4BD-1D0B907C9CBE}</ProjectGuid>
+    <RootNamespace>MandelLauncher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -43,7 +43,6 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
-    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -51,7 +50,6 @@
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,11 +70,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>$(ProjectName)_0.2.2</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>$(ProjectName)_0.2.2</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -84,20 +93,6 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\JNelson\source\repos\Mandelbrot-Explorer\mandelbrot\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>C:\Users\JNelson\source\repos\Mandelbrot-Explorer\mandelbrot\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -121,37 +116,27 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\JNelson\source\repos\Mandelbrot-Explorer\mandelbrot\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\JNelson\source\repos\Mandelbrot-Explorer\mandelbrot\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Complex.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="InMandel.cpp" />
-    <ClCompile Include="MandelClass.cpp" />
-    <ClCompile Include="Program.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CallBack.h" />
-    <ClInclude Include="Complex.h" />
     <ClInclude Include="Header.h" />
-    <ClInclude Include="InMandel.h" />
-    <ClInclude Include="MandelClass.h" />
-    <ClInclude Include="Program.h" />
+    <ClInclude Include="Launcher.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="mandelbrot.rc" />
+    <ClCompile Include="Launcher.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\x64\Release\2018_03_19_00_36_51_mandlebrot_2mG_icon.ico" />
+    <ResourceCompile Include="MandelLauncher1.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\mandelbrot\2018_03_19_00_36_51_mandlebrot_2mG_icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

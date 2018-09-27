@@ -16,13 +16,14 @@ int main()
 	double step, x, y, scale, phase;
 
 	//Input
-	std::cout << "Write New Config? (1 for yes 0 for no): ";
-	std::cin >> newConfig;
+	//std::cout << "Write New Config? (1 for yes 0 for no): ";
+	//std::cin >> newConfig;
 
 	//Define program
 	program p;
 
 	//Checks if new config is required and writes new values to a file
+	/*
 	if (newConfig != 0)
 
 	{
@@ -62,12 +63,12 @@ int main()
 			exit(EXIT_FAILURE);
 		}
 	}
-	
-	else
+	*/
+	//else
 
-	{
-		p.readConfig();
-	}
+	//{
+	p.readConfig();
+	//}
 
 	//Check for GLFW initilisation
 	if (!glfwInit())

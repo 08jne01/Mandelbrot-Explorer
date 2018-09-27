@@ -24,7 +24,7 @@ double Complex::arg()
 
 {
 	//Returns argument
-	double atan(im / re);
+	return atan(im / re);
 }
 
 void Complex::complexSquare()
