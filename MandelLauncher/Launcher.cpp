@@ -4,7 +4,7 @@ const char g_szClassName[] = "myWindowClass";
 #define ID_CHECKBOX 23
 
 HWND launcher::fnc1, launcher::fnc2, launcher::fnc3, launcher::fnc4, launcher::fnc5, launcher::fnc6, launcher::fnc7, launcher::fnc8, launcher::fnc9, launcher::fnc10, launcher::fnc11;
-HWND launcher::fnc[11];
+HWND launcher::fnc[13];
 launcher *launcher::ptr;
 
 LRESULT CALLBACK launcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -28,21 +28,48 @@ LRESULT CALLBACK launcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 		}
 
+		case WM_USER:
+
+		{
+			int msg1 = ptr->readConfig();
+			int msg2 = ptr->load();
+			ptr->setMessage(fnc[12], 0, msg1, msg2);
+		}
+
+		case WM_CTLCOLORSTATIC:
+
+		{
+			SetBkColor((HDC)wParam, RGB(1, 0, 0));
+			SetBkMode((HDC)wParam, TRANSPARENT);
+			return(LRESULT)GetStockObject(HOLLOW_BRUSH);
+			break;
+		}
+
+		case WM_CTLCOLORBTN:
+
+		{
+			SetBkColor((HDC)wParam, RGB(0, 0, 0));
+			SetBkMode((HDC)wParam, TRANSPARENT);
+			return(LRESULT)GetStockObject(HOLLOW_BRUSH);
+			break;
+		}
+
 		case WM_CREATE:
 
 		{
 
 			fnc[0] = CreateWindowExA(NULL, "button", "Start", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 300, 280, 50, 30, hwnd, (HMENU)1, GetModuleHandle(NULL), NULL);
-			fnc[1] = CreateWindowExA(NULL, "button", "Save", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 230, 280, 50, 30, hwnd, (HMENU)2, GetModuleHandle(NULL), NULL);
+			fnc[1] = CreateWindowExA(NULL, "button", "Save", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 240, 280, 50, 30, hwnd, (HMENU)2, GetModuleHandle(NULL), NULL);
 
-			CreateWindowExA(NULL, "static", "Fullscreen:", WS_CHILD | WS_VISIBLE, 240, 30, 70, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
+			CreateWindowExA(NULL, "static", "Fullscreen:", WS_CHILD | WS_VISIBLE, 240, 30, 80, 25, hwnd, NULL, GetModuleHandle(NULL), NULL);
 			fnc[2] = CreateWindowExA(NULL, "button", "", WS_VISIBLE | WS_CHILD | BS_CHECKBOX, 320, 30, 20, 20, hwnd, (HMENU)3, GetModuleHandle(NULL), NULL);
 
 			CheckDlgButton(hwnd, 3, BST_CHECKED);
 
+			CreateWindowExA(NULL, "static", "Load will load the config", WS_CHILD | WS_VISIBLE, 10, 270, 200, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
 			CreateWindowExA(NULL, "static", "Save will store to config", WS_CHILD | WS_VISIBLE, 10, 290, 200, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
 			CreateWindowExA(NULL, "static", "Start will run the program", WS_CHILD | WS_VISIBLE, 10, 310, 200, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
-
+			
 			CreateWindowExA(NULL, "static", "Width:", WS_CHILD | WS_VISIBLE, 10, 30, 45, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
 			fnc[3] = CreateWindowExA(NULL, "edit", "1920", WS_BORDER | WS_CHILD | WS_VISIBLE, 60, 30, 50, 20, hwnd, (HMENU)4, GetModuleHandle(NULL), NULL);
 			
@@ -67,6 +94,10 @@ LRESULT CALLBACK launcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			CreateWindowExA(NULL, "static", "Im Position: ", WS_CHILD | WS_VISIBLE, 10, 230, 120, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
 			fnc[10] = CreateWindowExA(NULL, "edit", "0.0", WS_BORDER | WS_CHILD | WS_VISIBLE, 100, 230, 270, 20, hwnd, (HMENU)11, GetModuleHandle(NULL), NULL);
 
+			
+			fnc[11] = CreateWindowExA(NULL, "button", "Load", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 180, 280, 50, 30, hwnd, (HMENU)12, GetModuleHandle(NULL), NULL);
+			fnc[12] = CreateWindowExA(WS_EX_TRANSPARENT, "static", "", WS_CHILD | WS_VISIBLE, 10, 10, 300, 20, hwnd, (HMENU)13, GetModuleHandle(NULL), NULL);
+
 			break;
 		}
 
@@ -89,43 +120,32 @@ LRESULT CALLBACK launcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				case 2:
 
 				{
-
-					ptr->save();
-					ptr->writeConfig();
+					int msg1 = ptr->save();
+					int msg2 = ptr->writeConfig();
+					ptr->setMessage(fnc[12], 1, msg1, msg2);
 					break;
 				}
 
 				case 3:
 
 				{
-					if (IsDlgButtonChecked(hwnd, 3) == 1)
-
-					{
-						CheckDlgButton(hwnd, 3, BST_UNCHECKED);
-					}
-
-					else
-
-					{
-						CheckDlgButton(hwnd, 3, BST_CHECKED);
-					}
+					ptr->checkBox(3);
 					break;
 				}
 
 				case 8:
 
 				{
-					if (IsDlgButtonChecked(hwnd, 8) == 1)
+					ptr->checkBox(8);
+					break;
+				}
 
-					{
-						CheckDlgButton(hwnd, 8, BST_UNCHECKED);
-					}
+				case 12:
 
-					else
-
-					{
-						CheckDlgButton(hwnd, 8, BST_CHECKED);
-					}
+				{
+					int msg1 = ptr->readConfig();
+					int msg2 = ptr->load();
+					ptr->setMessage(fnc[12], 0, msg1, msg2);
 					break;
 				}
 			}
@@ -134,13 +154,6 @@ LRESULT CALLBACK launcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		default:
 
 		{
-			if (ptr->startUp == 1)
-
-			{
-				SetWindowText(fnc[2], "123");
-				ptr->startUp = 0;
-			}
-
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	}
@@ -152,20 +165,27 @@ int launcher::setup(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 {
 	//Register Window
 	WNDCLASSEX wc = { 0 };
-	HWND hwnd;
 	MSG msg;
+
+	HICON hIcon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(ICON1), IMAGE_ICON, 64, 64, NULL));
+	if (hIcon == NULL)
+
+	{
+		printInt(1);
+	}
 	//Setup
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = 0;
 	wc.lpfnWndProc = &WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	//wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wc.lpszClassName = NULL;
 	wc.lpszClassName = g_szClassName;
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIcon = hIcon;
+	
 
 	startUp = 1;
 	ptr = static_cast<launcher*>(ptr_);
@@ -190,9 +210,7 @@ int launcher::setup(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	}
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
-
-	readConfig();
-	//load();
+	PostMessage(hwnd, WM_USER, NULL, NULL);
 
 	while (GetMessage(&msg, NULL, 0, 0) > 0)
 
@@ -205,7 +223,7 @@ int launcher::setup(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 }
 
-void launcher::readConfig()
+int launcher::readConfig()
 
 {
 	//Open the config
@@ -230,17 +248,18 @@ void launcher::readConfig()
 		}
 		//Close file
 		file.close();
+		return EXIT_SUCCESS;
 	}
 
 	else
 
 	{
 		MessageBox(NULL, "File could not be opened. Please run again and create config!", "Error!", MB_ICONEXCLAMATION | MB_OK);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 }
 
-void launcher::writeConfig()
+int launcher::writeConfig()
 
 {
 	//Open config file
@@ -266,13 +285,14 @@ void launcher::writeConfig()
 		}
 
 		file.close();
+		return EXIT_SUCCESS;
 	}
 
 	else
 
 	{
 		MessageBox(NULL, "File could not be opened!", "Error!", MB_ICONEXCLAMATION | MB_OK);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 }
@@ -293,7 +313,7 @@ double launcher::getTextDouble(HWND fnc)
 	double value;
 	char arr[20];
 	GetWindowText(fnc, arr, 20);
-	value = std::stoi(arr);
+	value = std::stod(arr);
 	return value;
 }
 
@@ -337,7 +357,7 @@ void launcher::toCharArrD(char *arr, int i)
 	free(f);
 }
 
-void launcher::save()
+int launcher::save()
 
 {
 	width = getTextInt(fnc[3]);
@@ -351,22 +371,12 @@ void launcher::save()
 	phase = getTextDouble(fnc[8]);
 	x = getTextDouble(fnc[9]);
 	y = getTextDouble(fnc[10]);
+	return EXIT_SUCCESS;
 }
 
-void launcher::load()
+int launcher::load()
 
 {
-	width = getTextInt(fnc[3]);
-	height = getTextInt(fnc[4]);
-	step = getTextInt(fnc[5]);
-	scale = getTextInt(fnc[6]);
-
-	greyScale = IsDlgButtonChecked(*hwndptr, 8);
-	fullScreen = IsDlgButtonChecked(*hwndptr, 3);
-
-	phase = getTextDouble(fnc[8]);
-	x = getTextDouble(fnc[9]);
-	y = getTextDouble(fnc[10]);
 
 	setTextInt(fnc[3], width);
 	setTextInt(fnc[4], height);
@@ -388,16 +398,90 @@ void launcher::load()
 	if (fullScreen == 0)
 
 	{
-		CheckDlgButton(*hwndptr, 8, BST_UNCHECKED);
+		CheckDlgButton(*hwndptr, 3, BST_UNCHECKED);
 	}
 
 	else
 
 	{
-		CheckDlgButton(*hwndptr, 8, BST_CHECKED);
+		CheckDlgButton(*hwndptr, 3, BST_CHECKED);
 	}
 
 	setTextDouble(fnc[8], phase);
 	setTextDouble(fnc[9], x);
 	setTextDouble(fnc[10], y);
+	return EXIT_SUCCESS;
+}
+
+void launcher::printInt(int i)
+
+{
+	std::string s = std::to_string(i);
+	char *f = (char*)malloc(sizeof(char) * (s.size() + 1));
+	strcpy_s(f, s.size() + 1, s.c_str());
+	MessageBox(NULL, f, "Value", MB_OK);
+	free(f);
+}
+
+void launcher::printDouble(double d)
+
+{
+	std::string s = std::to_string(d);
+	char *f = (char*)malloc(sizeof(char) * (s.size() + 1));
+	strcpy_s(f, s.size() + 1, s.c_str());
+	MessageBox(NULL, f, "Value", MB_OK);
+	free(f);
+}
+
+void launcher::setMessage(HWND hwnd, int loadSave, int success1, int success2)
+
+{
+
+	if (loadSave ==  0)
+
+	{
+		if (success1 == EXIT_SUCCESS && success2== EXIT_SUCCESS)
+
+		{
+			SetWindowText(hwnd, "Config loaded successfully!");
+			ShowWindow(hwnd, SW_HIDE);
+			ShowWindow(hwnd, SW_SHOW);
+			return;
+		}
+		SetWindowText(hwnd, "Config could not load!");
+		ShowWindow(hwnd, SW_HIDE);
+		ShowWindow(hwnd, SW_SHOW);
+	}
+
+	else if (loadSave == 1)
+
+	{
+		if (success1 == EXIT_SUCCESS && success2 == EXIT_SUCCESS)
+
+		{
+			SetWindowText(hwnd, "Config saved successfully!");
+			ShowWindow(hwnd, SW_HIDE);
+			ShowWindow(hwnd, SW_SHOW);
+			return;
+		}
+		SetWindowText(hwnd, "Config could not save!");
+		ShowWindow(hwnd, SW_HIDE);
+		ShowWindow(hwnd, SW_SHOW);
+	}
+}
+
+void launcher::checkBox(int id)
+
+{
+	if (IsDlgButtonChecked(hwnd, id) == 1)
+
+	{
+		CheckDlgButton(hwnd, id, BST_UNCHECKED);
+	}
+
+	else
+
+	{
+		CheckDlgButton(hwnd, id, BST_CHECKED);
+	}
 }

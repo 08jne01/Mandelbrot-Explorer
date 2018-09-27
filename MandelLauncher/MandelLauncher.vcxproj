@@ -136,7 +136,7 @@
     <ResourceCompile Include="MandelLauncher1.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\mandelbrot\2018_03_19_00_36_51_mandlebrot_2mG_icon.ico" />
+    <Image Include="2018_03_19_00_36_51_mandlebrot_2mG_icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

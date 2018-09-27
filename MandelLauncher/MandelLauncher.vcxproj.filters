@@ -39,7 +39,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\mandelbrot\2018_03_19_00_36_51_mandlebrot_2mG_icon.ico">
+    <Image Include="2018_03_19_00_36_51_mandlebrot_2mG_icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
